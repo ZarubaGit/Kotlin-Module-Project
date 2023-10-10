@@ -1,152 +1,154 @@
+import java.lang.NumberFormatException
 import java.util.Scanner
+import kotlin.system.exitProcess
+
+private val scanner = Scanner(System.`in`)
 
 class NotesApp {
     private val archives = mutableListOf<Archive>()
-    private val scanner = Scanner(System.`in`)
 
-    fun run() {
+     fun run() {
         while (true) {
             printMainMenu()
-            val choice = readIntInput()
-
-            when (choice) {
+            when (readIntInput()) {
                 1 -> createArchive()
                 2 -> viewArchives()
                 3 -> exitApp()
-                else -> println("Неправильный выбор. Введите правильную цифру.")
+                else -> println("Неправильный выбор, введите правильную цифру.")
             }
+
+        }
+    }
+
+    private fun readIntInput(): Int {
+        return try {
+            scanner.nextLine().toInt()
+        } catch (e: NumberFormatException) {
+            println("Пожалуйста, введите цифру")
+            -1
         }
     }
 
     private fun printMainMenu() {
-        println("Меню:")
-        println("1. Создать архив")
-        println("2. Просмотр архивов")
-        println("3. Выйти из приложения")
+        println(
+            "Меню:" +
+                    "\n1. Создать архив" +
+                    "\n2. Просмотр архивов" +
+                    "\n3. Выйти из приложения"
+        )
     }
 
-    private fun createArchive() {
-        print("Введите название архива: ")
+    private fun createArchive(){
+        println("Введите название архива: ")
         val archiveTitle = scanner.nextLine()
-        if (archiveTitle.isNotEmpty()) {
+        if(archiveTitle.isNotEmpty()){
             val archive = Archive(archiveTitle)
             archives.add(archive)
-            println("Архив '$archiveTitle' создан.")
+            println("Архив $archiveTitle создан.")
         } else {
             println("Название архива не может быть пустым.")
         }
     }
 
-    private fun viewArchives() {
-        if (archives.isEmpty()) {
+    private fun viewArchives(){
+        if(archives.isEmpty()){
             println("Нет созданных архивов.")
             return
         }
-
-        while (true) {
+        while(true){
             println("Список архивов:")
-            archives.forEachIndexed { index, archive ->
+            archives.forEachIndexed{index, archive ->
                 println("${index + 1}. ${archive.title}")
             }
             println("${archives.size + 1}. Вернуться в главное меню")
-            val choice = readIntInput()
-
-            if (choice in 1..archives.size) {
-                val selectedArchive = archives[choice - 1]
-                viewArchive(selectedArchive)
-            } else if (choice == archives.size + 1) {
-                return
-            } else {
-                println("Неправильный выбор. Введите правильную цифру.")
+            when (val choice = readIntInput()) {
+                in 1.. archives.size -> {
+                    val selectedArchive = archives[choice -1]
+                    viewArchive(selectedArchive)
+                }
+                archives.size + 1 -> {
+                    return
+                }
+                else -> {
+                    println("Неправильный выборю. Введите правильную цифру.")
+                }
             }
         }
     }
-
-    private fun viewArchive(archive: Archive) {
-        while (true) {
-            println("Архив: ${archive.title}")
-            println("1. Добавить заметку")
-            println("2. Просмотреть заметки")
-            println("3. Вернуться к списку архивов")
-            val choice = readIntInput()
-
-            when (choice) {
+    private fun viewArchive(archive: Archive){
+        while(true){
+            println("Архив ${archive.title}" +
+                    "\n1. Добавить заметку" +
+                    "\n2. Просмотреть заметку" +
+                    "\n3. Вернуться к списку архивов")
+            when(readIntInput()){
                 1 -> createNoteInArchive(archive)
-                2 -> viewNotesInArchive(archive)
+                2 -> viewNoteInArchive(archive)
                 3 -> return
-                else -> println("Неправильный выбор. Введите правильную цифру.")
+                else -> println("Неправильный выбор. Введите правильную цифру")
             }
         }
     }
-
-    private fun createNoteInArchive(archive: Archive) {
-        print("Введите название заметки: ")
+    private fun createNoteInArchive(archive: Archive){
+        println("Введите название заметки: ")
         val noteTitle = scanner.nextLine()
-        if (noteTitle.isNotEmpty()) {
-            print("Введите текст заметки: ")
+        if(noteTitle.isNotEmpty()){
+            println("Введите текст заметки: ")
             val noteContent = scanner.nextLine()
-            if (noteContent.isNotEmpty()) {
+            if(noteContent.isNotEmpty()){
                 val note = Note(noteTitle, noteContent)
                 archive.addNote(note)
-                println("Заметка '$noteTitle' добавлена в архив '${archive.title}'.")
+                println("Заметка $noteTitle добавлена в архив '${archive.title}'")
             } else {
-                println("Содержание заметки не может быть пустым.")
+                println("Содержание заметки не может быть пустым")
             }
         } else {
-            println("Название заметки не может быть пустым.")
+            println("Название заметки не может быть пустым")
         }
     }
-
-    private fun viewNotesInArchive(archive: Archive) {
+    private fun viewNoteInArchive(archive: Archive){
         val notes = archive.getNotes()
-        if (notes.isEmpty()) {
+        if(notes.isEmpty()){
             println("В архиве '${archive.title}' нет заметок.")
             return
         }
-
-        while (true) {
+        while(true){
             println("Заметки в архиве '${archive.title}':")
-            notes.forEachIndexed { index, note ->
+            notes.forEachIndexed{index, note ->
                 println("${index + 1}. ${note.title}")
             }
-            println("${notes.size + 1}. Вернуться к списку архива")
-            val choice = readIntInput()
+            println("${notes.size + 1}. Вернуться к списку архивов")
+            when (val choice = readIntInput()) {
+                in 1..notes.size -> {
+                    val selectedNote = notes[choice - 1]
+                    viewNoteContent(selectedNote)
 
-            if (choice in 1..notes.size) {
-                val selectedNote = notes[choice - 1]
-                viewNoteContent(selectedNote)
-            } else if (choice == notes.size + 1) {
-                return
-            } else {
-                println("Неправильный выбор. Введите правильную цифру.")
+                }
+                notes.size + 1 -> {
+                    return
+                }
+                else -> {
+                    println("Неправильный выбор. Введите правильную цифру.")
+                }
             }
         }
     }
-
-    private fun viewNoteContent(note: Note) {
+    private fun viewNoteContent(note: Note){
         println("Содержание заметки '${note.title}':")
         println(note.content)
-        println("1. Вернуться к списку заметок")
+        println("1 .Вернуться к списку заметок")
         val choice = readIntInput()
-        if (choice == 1) {
+        if(choice == 1){
             return
         } else {
             println("Неправильный выбор. Введите правильную цифру.")
         }
     }
 
-    private fun exitApp() {
+    private fun exitApp(){
         println("Приложение завершено.")
-        System.exit(0)
+        exitProcess(0)
     }
 
-    private fun readIntInput(): Int {
-        try {
-            return scanner.nextLine().toInt()
-        } catch (e: NumberFormatException) {
-            println("Пожалуйста, введите цифру.")
-            return -1
-        }
-    }
 
 }
